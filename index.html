@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nursing Informatics Intelligent Q & A System</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f0f0f0 url('images/background.jpg') no-repeat center center fixed; /* 本地背景图片 */
+            background-size: cover;
+            color: #333;
+        }
+
+        #top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 30px; /* 设置模块高度 */
+            background-color: #900C11; /* 北京大学红色 */
+            z-index: 1001; /* 确保在 Logo 之上 */
+            display: flex; /* 使用 Flexbox 布局 */
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+        }
+
+        #top-bar img {
+            max-height: 20px; /* 限制图片最大高度 */
+            max-width: 80%; /* 限制图片最大宽度 */
+            object-fit: contain; /* 保持图片比例 */
+        }
+
+        #logo-container {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000; /* 确保 Logo 在其他元素之上 */
+        }
+
+        #logo-container img {
+            width: 100px; /* 设置 Logo 宽度 */
+            height: auto;
+        }
+
+        #footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #900C11; /* 北京大学红色 */
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.8em;
+            z-index: 1000; /* 确保版权声明在其他元素之上 */
+        }
+
+        #container {
+            display: flex; /* 使用 Flexbox 布局 */
+            width: 100%;
+            max-width: 1200px; /* 限制容器最大宽度 */
+            margin: 50px auto;
+        }
+
+        #left-sidebar {
+            width: 30%; /* 左侧边栏宽度为 45% */
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+            border-radius: 10px;
+            margin: 0 20px;
+            text-align: left; /* 左对齐列表 */
+        }
+
+        #left-sidebar ul {
+            list-style: none; /* 移除列表符号 */
+            padding: 0;
+            margin: 0;
+        }
+
+        #left-sidebar li {
+            margin-bottom: 10px;
+        }
+
+        #left-sidebar a {
+            text-decoration: none; /* 移除下划线 */
+            color: #900C11; /* 北京大学红色 */
+        }
+
+        #left-sidebar a:hover {
+            text-decoration: underline; /* 鼠标悬停时显示下划线 */
+        }
+
+        #chat-container {
+            width: 55%; /* 聊天容器宽度为 70% */
+            flex-grow: 1; /* 聊天容器占据剩余空间 */
+            background-color: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* 确保内容不超出容器 */
+        }
+
+        #header {
+            background-color: #900C11; /* 北京大学红色 */
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        #header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        #header h2 {
+            margin: 0;
+            font-size: 2em;
+            color: #900C11;
+        }
+
+        #header p {
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        #messages {
+            padding: 20px;
+            height: 520px; /* 固定消息区域高度 */
+            overflow-y: auto; /* 允许垂直滚动 */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: #aaa #eee; /* Firefox */
+        }
+
+        #messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #messages::-webkit-scrollbar-track {
+            background: #eee;
+            border-radius: 4px;
+        }
+
+        #messages::-webkit-scrollbar-thumb {
+            background: #aaa;
+            border-radius: 4px;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            clear: both; /* 防止浮动元素影响布局 */
+            max-width: 80%; /* 限制消息宽度 */
+            word-wrap: break-word; /* 自动换行 */
+        }
+
+        .user-message {
+            background-color: #e2f0ff;
+            text-align: right;
+            float: right;
+        }
+
+        .bot-message {
+            background-color: #f9f9f9;
+            text-align: left;
+            float: left;
+        }
+
+        /* 样式化AI助手的Markdown内容 */
+        .bot-message .markdown-content {
+            margin-top: 5px; /* 在标签和内容之间留出空间 */
+        }
+
+        .bot-message .markdown-content p {
+             margin-top: 5px;
+             margin-bottom: 5px;
+        }
+         .bot-message .markdown-content ul,
+         .bot-message .markdown-content ol {
+             margin-top: 5px;
+             margin-bottom: 5px;
+             padding-left: 20px; /* 列表缩进 */
+         }
+         .bot-message .markdown-content li {
+             margin-bottom: 3px;
+         }
+         .bot-message .markdown-content strong,
+         .bot-message .markdown-content b {
+             font-weight: bold;
+         }
+         .bot-message .markdown-content em,
+         .bot-message .markdown-content i {
+             font-style: italic;
+         }
+         .bot-message .markdown-content pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto; /* 处理长代码行 */
+            white-space: pre-wrap; /* 允许代码块换行 */
+            word-wrap: break-word; /* 允许代码块内部换行 */
+         }
+         .bot-message .markdown-content code {
+             font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+             font-size: 0.9em;
+         }
+         .bot-message .markdown-content blockquote {
+             border-left: 4px solid #ccc;
+             padding-left: 10px;
+             color: #666;
+             margin-left: 0;
+         }
+
+
+        #input-area {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 2px solid #ddd;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 1em;
+        }
+
+        #send-button {
+            background-color: #900C11; /* 北京大学红色 */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        #send-button:hover {
+            background-color: #70090D; /* 稍微深一点的红色 */
+        }
+
+        #send-button:disabled {
+             background-color: #ccc; /* 禁用时变灰 */
+             cursor: not-allowed;
+        }
+
+        /* Switch 样式 */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-left: 10px; /* 添加左边距 */
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3; /* 开关打开时的颜色 */
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* 开关旁边的文本样式 */
+        #input-area span {
+            margin-left: 10px;
+            margin-right: 10px; /* 添加右边距 */
+        }
+
+        /* 中止按钮样式 - 修改以匹配图片 */
+        #stop-button {
+            background-color: #e0e0e0; /* 浅灰色背景 */
+            color: #333; /* 深灰色文字颜色 */
+            border: none;
+            padding: 8px 15px; /* 调整内边距 */
+            border-radius: 20px; /* 使其呈药丸状 */
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            margin-left: 10px; /* 添加左边距 */
+            /* 初始状态隐藏，通过 JS 控制显示 */
+            display: none;
+            /* 使用 flexbox 对齐符号和文本 */
+            align-items: center; /* 垂直居中 */
+            gap: 5px; /* 符号和文本之间的间距 */
+        }
+
+        #stop-button:hover {
+            background-color: #d5d5d5; /* 鼠标悬停时稍微深一点的灰色 */
+        }
+
+         #stop-button:disabled {
+             background-color: #ccc; /* 禁用时变灰 */
+             cursor: not-allowed;
+             color: #666; /* 禁用时文字颜色变浅 */
+         }
+    </style>
+</head>
+<body>
+    <div id="top-bar">
+        <img src="https://nursing.bjmu.edu.cn/images/t4_logo_01.png" alt="Top Bar Image">
+    </div>
+
+
+    <div id="container">
+		<div id="left-sidebar">
+			<p>Learn more about nursing informatics? Here are some useful association links.：</p>
+			<ul>
+				<li><a href="https://imia-medinfo.org/wp/" target="_blank">International Medical Informatics Association</a></li>
+				<li><a href="https://www.himss.org/" target="_blank">Healthcare Information and Management Systems Society</a></li>
+				<li><a href="https://www.tigersummit.com/" target="_blank">Technology Informatics Guiding Education Reform</a></li>
+				<li><a href="https://www.chia-moh.org.cn/site/term/196.html" target="_blank">Chinese Medical Information and big data Association</a></li>
+				<li><a href="http://www.cmia.info/details.asp?id=1" target="_blank">China Medical Informatics Association</a></li>
+				<li><a href="https://csmi.cma.org.cn/" target="_blank">Chinese Society of Medical Informatics</a></li>
+				<li><a href="http://www.hksmi.org/" target="_blank">Hong Kong Society of Medical Informatics</a></li>
+				<li><a href="https://amia.org/" target="_blank">American Medical Informatics Association</a></li>
+				<li><a href="https://www.ania.org/" target="_blank">American Nursing Informatics Association</a></li>
+				<li><a href="https://www.ahima.org/" target="_blank">American Health Information Management Association</a></li>
+				<li><a href="https://www.digitalhealth.gov.au/" target="_blank">Australasian Institute of Digital Health</a></li>
+				<li><a href="https://cnia.ca/" target="_blank">Canadian Nursing Informatics Association </a></li>
+				<li><a href="https://efmi.org/" target="_blank">European Federation for Medical Informatics </a></li>
+				<li><a href="https://www.apami.org/" target="_blank">Asia-Pacific Association for Medical Informatics</a></li>
+				<li><a href="https://www.ehealthtraining.com.au/" target="_blank">eHealth and Health Informatics</a></li>
+				<li><a href="https://www.hinz.org.nz/" target="_blank">Health Informatics New Zealand</a></li>
+			</ul>
+		</div>
+
+
+        <div id="chat-container">
+            <div id="header">
+                <h1>Nurse Informatics Intelligent Q & A System</h1>
+            </div>
+            <div id="messages">
+                <!-- 消息将在这里动态添加 -->
+            </div>
+            <div id="input-area">
+                <input type="text" id="user-input" placeholder="Please enter your questions...">
+                <label class="switch">
+                    <input type="checkbox" id="api-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span>Knowledge Base</span>
+                <button id="send-button">Send</button>
+                <!-- 添加中止按钮，修改文本和样式 -->
+                <button id="stop-button" aria-label="停止生成">⏸ Stop</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer">
+        &copy; 2025 北京大学护理学院. All rights reserved.
+    </div>
+
+    <!-- 引入 marked.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        // JavaScript 代码
+        const apiKey1 = "fastgpt-sbBUQBMYLIsC0KDNzmphIZR4SKbkf1gNcUblnWDMjgP5B5oG6D4ESJS2xB"; // 无知识库
+        const apiKey2 = "fastgpt-bGteNNSHtjscSwXiWxyivlg6dEsgk9bm2QkUMhq9y3fNxkRzSH3fVtv3tvKz"; // 有知识库
+        const baseUrl1 = "https://cloud.fastgpt.io/api"; // API 1 的 URL
+        const baseUrl2 = "https://cloud.fastgpt.io/api"; // API 2 的 URL
+
+        let chatId = localStorage.getItem('chatId');
+
+        if (!chatId) {
+            chatId = generateChatId();
+            localStorage.setItem('chatId', chatId);
+        }
+
+        function generateChatId() {
+            return Math.random().toString(36).substring(2, 15);
+        }
+
+        const userInput = document.getElementById("user-input");
+        const sendButton = document.getElementById("send-button");
+        const messagesDiv = document.getElementById("messages");
+        const apiSwitch = document.getElementById("api-switch"); // 获取开关按钮
+        const stopButton = document.getElementById("stop-button"); // 获取中止按钮
+
+        // 用于控制请求中止
+        let currentAbortController = null;
+
+        sendButton.addEventListener("click", sendMessage);
+        // 允许按回车键发送消息
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // 阻止默认的回车换行行为
+                sendMessage();
+            }
+        });
+
+        // 添加中止按钮的事件监听器
+        stopButton.addEventListener("click", abortMessage);
+
+        // 标记是否正在发送消息，防止重复点击
+        let isSending = false;
+
+        // 中止消息的函数
+        function abortMessage() {
+            if (currentAbortController) {
+                console.log("Aborting message...");
+                currentAbortController.abort(); // 调用 AbortController 的 abort 方法
+                // 立即禁用中止按钮，防止重复点击
+                stopButton.disabled = true;
+            }
+        }
+
+
+        async function sendMessage() {
+            // 添加一个日志，确认函数是否被调用
+            console.log("sendMessage function called.");
+
+            if (isSending) return; // 如果正在发送，则忽略点击
+
+            const userMessage = userInput.value.trim(); // 获取用户输入并去除首尾空格
+            if (!userMessage) {
+                console.log("User input is empty, returning.");
+                return; // 如果输入为空则不发送
+            }
+
+            isSending = true; // 设置发送标记
+            sendButton.disabled = true; // 禁用发送按钮
+            userInput.disabled = true; // 禁用输入框
+
+            // 显示并启用中止按钮，使用 inline-flex
+            stopButton.style.display = 'inline-flex';
+            stopButton.disabled = false;
+
+            displayMessage(userMessage, "user"); // 显示用户消息
+            userInput.value = ""; // 清空输入框
+
+            // 显示加载指示器 "AI助手正在思考..."
+            displayLoadingIndicator();
+
+            // 创建一个用于显示AI助手回复的div，并添加到消息区域
+            // 这个 div 将在流式传输过程中被更新
+            const botMessageDiv = document.createElement("div");
+            botMessageDiv.classList.add("message", "bot-message");
+            const labelSpan = document.createElement("span");
+            labelSpan.style.fontWeight = 'bold';
+            labelSpan.style.marginRight = '5px';
+            labelSpan.textContent = "AI assistant: ";
+            const contentDiv = document.createElement("div"); // 使用一个div来存放内容
+            contentDiv.classList.add("markdown-content"); // 添加类以便样式控制
+            // 初始时内容为空，加载指示器已经显示了思考状态
+            botMessageDiv.appendChild(labelSpan);
+            botMessageDiv.appendChild(contentDiv); // 将内容div添加到消息div
+            messagesDiv.appendChild(botMessageDiv); // 将消息div添加到DOM
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // 滚动到底部以显示新消息
+
+            let accumulatedMessage = ""; // 用于累积流式传输的完整消息文本
+
+            // 为当前请求创建一个新的 AbortController
+            currentAbortController = new AbortController();
+            const signal = currentAbortController.signal;
+
+
+            try {
+                const useApi2 = apiSwitch.checked; // 获取开关状态
+                const apiKey = useApi2 ? apiKey2 : apiKey1;
+                const baseUrl = useApi2 ? baseUrl2 : baseUrl1;
+
+                const requestBody = {
+                    chatId: chatId,
+                    stream: true, // 启用流式输出
+                    detail: false,
+                    messages: [{ content: userMessage, role: "user" }]
+                };
+
+                console.log("Request Body:", JSON.stringify(requestBody)); // 打印请求体
+
+                const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${apiKey}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(requestBody),
+                    signal: signal // 将 AbortController 的信号传递给 fetch
+                });
+
+                // 在收到第一个 chunk 之前移除加载指示器（如果 fetch 成功的话）
+                if (response.ok) {
+                   removeLoadingIndicator();
+                } else {
+                   // 如果响应状态码不是 2xx，也移除加载指示器并抛出错误
+                   removeLoadingIndicator();
+                   const errorText = await response.text();
+                   try {
+                       const errorJson = JSON.parse(errorText);
+                       console.error("API Error Response:", errorJson); // 打印 API 返回的错误详情
+                       throw new Error(`HTTP error! status: ${response.status}, code: ${errorJson.code}, message: ${errorJson.message}`);
+                   } catch (e) {
+                        console.error("Failed to parse API error response:", errorText); // 打印原始错误文本
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText || '未知错误'}`);
+                   }
+                }
+
+                // 处理流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let done = false;
+
+                while (!done) {
+                     // 检查信号是否被中止
+                     if (signal.aborted) {
+                         console.log("Fetch aborted by user.");
+                         // 在消息末尾添加中止提示
+                         contentDiv.innerHTML += marked.parse("\n\n*(Stopping)*"); // 在现有内容后添加停止提示
+                         messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                         break; // 退出循环
+                     }
+
+                    const { value, done: readerDone } = await reader.read();
+                    done = readerDone;
+                    const chunk = decoder.decode(value, { stream: true });
+
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const dataString = line.substring(6);
+                            if (dataString.trim() === '[DONE]') {
+                                done = true;
+                                break; // 结束流
+                            }
+                            try {
+                                const data = JSON.parse(dataString);
+                                if (data.choices && data.choices[0] && data.choices[0].delta && data.choices[0].delta.content) {
+                                    const deltaContent = data.choices[0].delta.content;
+                                    accumulatedMessage += deltaContent; // 累积文本
+                                    // 实时更新显示内容 (使用 innerHTML 和 marked.js)
+                                    // marked.parse 可能会有性能开销，但对于大多数聊天场景是可接受的
+                                    contentDiv.innerHTML = marked.parse(accumulatedMessage);
+                                    messagesDiv.scrollTop = messagesDiv.scrollHeight; // 保持滚动到底部
+                                } else if (data.error) {
+                                     console.error("API returned error in stream:", data.error);
+                                     // 如果流中出现错误，也应该终止并显示错误
+                                     accumulatedMessage += `\n\n*API流错误: ${data.error.message || 'Error'}*`;
+                                     contentDiv.innerHTML = marked.parse(accumulatedMessage);
+                                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                                     done = true; // 结束流处理
+                                     break; // 退出内层循环
+                                }
+                            } catch (e) {
+                                console.error("Error parsing JSON chunk:", e, "Chunk:", dataString);
+                                // 如果解析错误，可能是非标准格式，跳过或记录
+                                // accumulatedMessage += `\n\n*数据解析错误*`; // 可以选择显示解析错误提示
+                                // contentDiv.innerHTML = marked.parse(accumulatedMessage);
+                                // messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                            }
+                        }
+                    }
+                }
+
+                // 如果循环正常结束（没有被中止），并且 accumulatedMessage 为空，可能是没有收到内容，显示一个默认提示
+                 if (!signal.aborted && accumulatedMessage.trim() === "") {
+                     contentDiv.innerHTML = marked.parse("AI助手未能生成回复，请稍后再试或换个问题。");
+                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                 }
+
+
+            } catch (error) {
+                removeLoadingIndicator(); // 确保移除加载指示器
+
+                // 检查错误是否是 AbortError
+                if (error.name === 'AbortError') {
+                    console.log("Fetch request was aborted.");
+                    // AbortError 已经在上面的 while 循环中处理了，确保提示已显示
+                    // 如果在加载指示器显示期间就被中止，确保在 botMessageDiv 中显示中止提示
+                    if (document.getElementById("loading-indicator") && contentDiv) {
+                         // 如果已经累积了部分消息，在后面添加中止提示
+                         if (accumulatedMessage.trim() !== "") {
+                              contentDiv.innerHTML = marked.parse(accumulatedMessage + "\n\n*(生成已停止)*");
+                         } else {
+                              // 如果没有累积消息，直接显示中止提示
+                             contentDiv.innerHTML = marked.parse("*(Stopping)*");
+                         }
+                         messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    }
+
+                } else {
+                    console.error("Error calling API:", error);
+                    console.error("Error Message:", error.message);
+                    console.error("Error Stack:", error.stack);
+
+
+                    // 在 bot 消息区域显示错误提示
+                    if (contentDiv) {
+                         // 如果已经累积了部分消息，在后面添加错误提示
+                         if (accumulatedMessage.trim() !== "") {
+                             contentDiv.innerHTML = marked.parse(accumulatedMessage + "\n\n*AI assistant can not response.*");
+                         } else {
+                             // 如果没有累积消息，直接显示错误提示
+                             contentDiv.innerHTML = marked.parse("AI assistant can not response. Please try later.");
+                         }
+                    } else {
+                        // 如果 botMessageDiv 都没有创建成功，显示一个独立错误消息
+                        displayMessage("AI assistant can not response. Please try later.", "bot");
+                    }
+                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+
+            } finally {
+                isSending = false; // 重置发送标记
+                sendButton.disabled = false; // 启用发送按钮
+                userInput.disabled = false; // 启用输入框
+                // 隐藏并禁用中止按钮
+                stopButton.style.display = 'none';
+                stopButton.disabled = true;
+                currentAbortController = null; // 清除 AbortController 实例
+                userInput.focus(); // 重新聚焦输入框
+            }
+        }
+
+
+        // 此函数现在主要用于显示用户消息
+        function displayMessage(message, sender) {
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            messageDiv.classList.add(`${sender}-message`);
+
+            const labelSpan = document.createElement("span");
+            labelSpan.style.fontWeight = 'bold'; // 让标签文字加粗
+            labelSpan.style.marginRight = '5px'; // 标签和内容之间留点空隙
+
+            if (sender === 'user') {
+                labelSpan.textContent = "You: ";
+                const contentSpan = document.createElement("span");
+                contentSpan.textContent = message; // 用户消息保持纯文本
+                messageDiv.appendChild(labelSpan);
+                messageDiv.appendChild(contentSpan);
+                messagesDiv.appendChild(messageDiv); // 用户消息直接添加到 DOM
+                messagesDiv.scrollTop = messagesDiv.scrollHeight; // 滚动到底部
+            }
+            // AI 助手的消息容器创建和内容更新已在 sendMessage 中处理
+        }
+
+        // 显示“正在思考...”的加载指示器
+        function displayLoadingIndicator() {
+            // 检查是否已经存在加载指示器，避免重复添加
+            if (document.getElementById("loading-indicator")) {
+                return;
+            }
+            const loadingDiv = document.createElement("div");
+            loadingDiv.id = "loading-indicator";
+            loadingDiv.classList.add("message", "bot-message"); // 使用 bot-message 样式
+            // 加载指示器也需要标签
+            const labelSpan = document.createElement("span");
+            labelSpan.style.fontWeight = 'bold';
+            labelSpan.style.marginRight = '5px';
+            labelSpan.textContent = "AI assistant: ";
+            const contentSpan = document.createElement("span");
+            contentSpan.textContent = "Thinking..."; // 显示思考文本
+
+            loadingDiv.appendChild(labelSpan); // 将标签添加到加载div
+            loadingDiv.appendChild(contentSpan); // 将文本添加到加载div
+            messagesDiv.appendChild(loadingDiv); // 将加载div添加到消息区域
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // 滚动到底部
+        }
+
+        // 移除加载指示器
+        function removeLoadingIndicator() {
+            const loadingDiv = document.getElementById("loading-indicator");
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        // 初始化时可以显示一条欢迎消息
+        document.addEventListener("DOMContentLoaded", () => {
+             // 使用 setTimeout 给页面渲染一些时间，避免加载指示器闪烁
+             setTimeout(() => {
+                 displayMessage("Hello！You can ask me anything!", "bot");
+             }, 100); // 延迟 100ms
+             userInput.focus(); // 页面加载完成后将焦点设置到输入框
+        });
+
+
+    </script>
+</body>
+</html>
